@@ -7,6 +7,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -15,28 +21,28 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf automake libtool m4 gettext pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev openjdk-17-jdk
+          sudo apt install -y git zip unzip autoconf automake libtool m4 gettext pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install "buildozer==1.5.0" cython==0.29.33
 
       - name: Build with Buildozer
         run: |
-          # حذف أي ملفات قديمة تماماً
           rm -rf .buildozer
-          # عمل Init جديد لو مش موجود وتعديله فوراً
-          if [ ! -f buildozer.spec ]; then
-            buildozer init
-          fi
-          # تعديلات "سحرية" في الـ spec عشان Gradle ينجح
+          # إنشاء spec جديد ونظيف تماماً لضمان عدم وجود تعارضات
+          buildozer init
+          
+          # تعديلات إجبارية للتوافق مع Java 17 و Gradle
           sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
           sed -i 's/android.minapi = 21/android.minapi = 24/g' buildozer.spec
-          sed -i 's/android.ndk = 25b/android.ndk = 25c/g' buildozer.spec
+          sed -i 's/#android.ndk_path =/android.ndk_path = /g' buildozer.spec
+          sed -i 's/#android.sdk_path =/android.sdk_path = /g' buildozer.spec
           sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
           
-          # البدء في البناء مع عرض التفاصيل
+          # بناء التطبيق
           buildozer -v android debug
 
       - name: Capture APK
+        if: always()
         run: |
           mkdir -p output
           find . -name "*.apk" -exec cp {} output/D3f4ult.apk \;
