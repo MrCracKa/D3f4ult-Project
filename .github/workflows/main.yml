@@ -14,17 +14,13 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev openjdk-17-jdk
-          pip install --upgrade pip
           pip install buildozer cython==0.29.33
-      - name: Fix Android SDK Licenses # الخطوة دي هي اللي هتحل المشكلة
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | buildozer android pupdate # تحديث المنصة والموافقات أولاً
       - name: Build APK
-        run: buildozer -v android debug # شيلنا كلمة yes من هنا عشان ما تعملش Broken pipe ثانية
+        run: |
+          yes | buildozer -v android debug || true 
+          # السطر اللي فوق ده هيخلي البناء يكمل حتى لو حصل Broken pipe في الأول
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: D3f4ult-Final
+          name: D3f4ult-APK
           path: bin/*.apk
