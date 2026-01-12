@@ -1,55 +1,26 @@
-name: Build D3f4ult Final
-on: [push, workflow_dispatch]
+name: Build GodFather APK
+on:
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip autoconf automake libtool m4 gettext pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          pip install --upgrade pip
-          pip install "buildozer==1.5.0" cython==0.29.33
+      - name: Get Date
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Build with Buildozer
-        run: |
-          rm -rf .buildozer
-          rm -f buildozer.spec
-          buildozer init
-          
-          # تعديلات ذكية لتثبيت النسخ المستقرة والموافقة على التراخيص
-          sed -i 's/package.name = myapp/package.name = d3f4ult/g' buildozer.spec
-          sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
-          sed -i 's/android.minapi = 21/android.minapi = 24/g' buildozer.spec
-          # إجبار Buildozer على استخدام نسخة مستقرة من build-tools
-          sed -i 's/#android.build_tools_version = 31.0.0/android.build_tools_version = 33.0.0/g' buildozer.spec
-          sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
-          
-          # تشغيل البناء مع عرض التفاصيل (سيقوم بالموافقة التلقائية)
-          yes | buildozer -v android debug
-
-      - name: Capture APK
-        if: always()
-        run: |
-          mkdir -p output
-          find . -name "*.apk" -exec cp {} output/D3f4ult.apk \;
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: ArtemSerebriakov/buildozer-action@v1
         with:
-          name: D3f4ult-Package
-          path: output/
+          buildozer_version: master
+          command: buildozer android debug
+          repository_root: .
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Telegram_Premium_Final
+          path: bin/*.apk
