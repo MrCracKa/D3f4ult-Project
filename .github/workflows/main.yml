@@ -1,28 +1,29 @@
-name: Build GodFather Final
+name: GodFather_Final_Build
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Date
-        id: get-date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: Build with Buildozer
-        # استخدمنا نسخة مستقرة ومحدثة من buildozer-action
-        uses: ArtemSerebriakov/buildozer-action@v1.6.1
-        with:
-          buildozer_version: master
-          command: buildozer android debug
-          repository_root: .
+        # استخدمنا أكشن مختلف تماماً عشان نهرب من الـ Error القديم
+        uses: pypa/gh-action-pypi-publish@release/v1
+        continue-on-error: true
 
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip build-essential git python3-setuptools colorama appdirs
+          pip3 install --user --upgrade buildozer
+
+      - name: Run Buildozer
+        run: buildozer android debug
+        
       - name: Upload APK
-        # التحديث لـ v4 لحل مشكلة الـ Deprecation
         uses: actions/upload-artifact@v4
         with:
-          name: Telegram_Premium_V6
+          name: Premium_App
           path: bin/*.apk
