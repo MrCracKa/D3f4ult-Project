@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # رجعنا لنسخة مستقرة أكتر
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       
@@ -21,17 +21,22 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # لو مفيش ملف spec السيرفر هيعمل واحد جديد نظيف
+          # حذف أي ملفات قديمة تماماً
+          rm -rf .buildozer
+          # عمل Init جديد لو مش موجود وتعديله فوراً
           if [ ! -f buildozer.spec ]; then
             buildozer init
-            sed -i 's/package.name = myapp/package.name = d3f4ult/g' buildozer.spec
-            sed -i 's/package.domain = org.test/package.domain = org.d3f4ult/g' buildozer.spec
           fi
-          # أمر البناء المباشر
+          # تعديلات "سحرية" في الـ spec عشان Gradle ينجح
+          sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
+          sed -i 's/android.minapi = 21/android.minapi = 24/g' buildozer.spec
+          sed -i 's/android.ndk = 25b/android.ndk = 25c/g' buildozer.spec
+          sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+          
+          # البدء في البناء مع عرض التفاصيل
           buildozer -v android debug
 
       - name: Capture APK
-        if: always() # حتى لو البناء فيه تحذير، حاول ترفع اللي طلع
         run: |
           mkdir -p output
           find . -name "*.apk" -exec cp {} output/D3f4ult.apk \;
