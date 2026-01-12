@@ -22,5 +22,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: D3f4ult-Final-App
-          path: ./.buildozer/android/platform/build-armeabi-v7a/dists/*/*.apk
-          # السطر اللي فوق ده هيدور في قلب المصنع ويطلع الملف مهما كان مستخبي
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build/dists/*/*.apk
