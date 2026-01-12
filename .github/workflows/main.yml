@@ -1,25 +1,42 @@
-name: Build D3f4ult APK
-on: [push, workflow_dispatch]
+name: Build and Deploy D3f4ult
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-and-deploy:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Python
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python_version: '3.10'
-      - name: Install Dependencies
+          python-version: "3.10"
+
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev openjdk-17-jdk
           pip install buildozer cython==0.29.33
+
       - name: Build APK
         run: |
+          # لو الملف موجود مش هيعمل init، لو مش موجود هيعمله
+          [ -f buildozer.spec ] || buildozer init
           yes | buildozer -v android debug || true
-      - name: Upload APK
+
+      - name: Shadow Core Finder (The Hunt)
+        run: |
+          mkdir -p final_artifacts
+          # ده الجزء اللي دارك عايزه: البحث عن الـ APK في كل مكان ونقله
+          find . -name "*.apk" -exec cp {} final_artifacts/D3f4ult_Shadow.apk \;
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: D3f4ult-Final-App
-          path: "**/*.apk"
+          name: Shadow-Core-App
+          path: final_artifacts/
