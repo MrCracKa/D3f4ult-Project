@@ -27,18 +27,19 @@ jobs:
 
       - name: Build with Buildozer
         run: |
+          # مسح شامل لكل ما هو قديم لضمان عدم حدوث Error
           rm -rf .buildozer
-          # إنشاء spec جديد ونظيف تماماً لضمان عدم وجود تعارضات
+          rm -f buildozer.spec
+          
+          # إنشاء الملف من جديد وتعديله فوراً
           buildozer init
           
-          # تعديلات إجبارية للتوافق مع Java 17 و Gradle
+          sed -i 's/package.name = myapp/package.name = d3f4ult/g' buildozer.spec
           sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
           sed -i 's/android.minapi = 21/android.minapi = 24/g' buildozer.spec
-          sed -i 's/#android.ndk_path =/android.ndk_path = /g' buildozer.spec
-          sed -i 's/#android.sdk_path =/android.sdk_path = /g' buildozer.spec
           sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
           
-          # بناء التطبيق
+          # بناء التطبيق مع عرض التفاصيل
           buildozer -v android debug
 
       - name: Capture APK
