@@ -1,21 +1,27 @@
-name: Build GodFather Premium
+name: Build GodFather Final
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get Date
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
       - name: Build with Buildozer
-        uses: jreilly/buildozer-action@v2
+        # استخدمنا نسخة مستقرة ومحدثة من buildozer-action
+        uses: ArtemSerebriakov/buildozer-action@v1.6.1
         with:
           buildozer_version: master
           command: buildozer android debug
           repository_root: .
 
       - name: Upload APK
+        # التحديث لـ v4 لحل مشكلة الـ Deprecation
         uses: actions/upload-artifact@v4
         with:
           name: Telegram_Premium_V6
