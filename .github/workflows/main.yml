@@ -17,10 +17,10 @@ jobs:
           pip install buildozer cython==0.29.33
       - name: Build APK
         run: |
-          yes | buildozer -v android debug || true 
-          # السطر اللي فوق ده هيخلي البناء يكمل حتى لو حصل Broken pipe في الأول
-      - name: Upload
+          yes | buildozer -v android debug || true
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: D3f4ult-APK
-          path: bin/*.apk
+          name: D3f4ult-Final-App
+          path: ./.buildozer/android/platform/build-armeabi-v7a/dists/*/*.apk
+          # السطر اللي فوق ده هيدور في قلب المصنع ويطلع الملف مهما كان مستخبي
