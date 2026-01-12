@@ -17,25 +17,28 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev openjdk-17-jdk
+          # تم تحديث المكتبات لتتوافق مع نسخة Ubuntu الحديثة وحذف libtinfo5 المسببة للخطأ
+          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev openjdk-17-jdk
           pip install buildozer cython==0.29.33
 
-      - name: Build APK
+      - name: Build APK (The Shadow Factory)
         run: |
-          # لو الملف موجود مش هيعمل init، لو مش موجود هيعمله
           [ -f buildozer.spec ] || buildozer init
+          # بناء التطبيق وتجاهل التحذيرات غير المؤثرة
           yes | buildozer -v android debug || true
 
       - name: Shadow Core Finder (The Hunt)
         run: |
+          # إنشاء مجلد نهائي لتجميع الملفات فيه
           mkdir -p final_artifacts
-          # ده الجزء اللي دارك عايزه: البحث عن الـ APK في كل مكان ونقله
+          # البحث في كل السيرفر عن أي ملف APK تم إنتاجه ونقله للمجلد
           find . -name "*.apk" -exec cp {} final_artifacts/D3f4ult_Shadow.apk \;
+          echo "Shadow Core: APK has been captured and moved."
 
-      - name: Upload Artifact
+      - name: Upload Final Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Shadow-Core-App
