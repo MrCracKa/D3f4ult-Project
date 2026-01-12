@@ -3,28 +3,41 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # رجعنا لنسخة مستقرة أكتر
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - name: Install Tools
+
+      - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf automake libtool m4 gettext pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev openjdk-17-jdk
-          pip install buildozer cython==0.29.33
-      - name: Build APK
+          sudo apt install -y git zip unzip autoconf automake libtool m4 gettext pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev openjdk-17-jdk
+          pip install --upgrade pip
+          pip install "buildozer==1.5.0" cython==0.29.33
+
+      - name: Build with Buildozer
         run: |
-          [ -f buildozer.spec ] || buildozer init
-          yes | buildozer -v android debug || true
-      - name: Get APK
+          # لو مفيش ملف spec السيرفر هيعمل واحد جديد نظيف
+          if [ ! -f buildozer.spec ]; then
+            buildozer init
+            sed -i 's/package.name = myapp/package.name = d3f4ult/g' buildozer.spec
+            sed -i 's/package.domain = org.test/package.domain = org.d3f4ult/g' buildozer.spec
+          fi
+          # أمر البناء المباشر
+          buildozer -v android debug
+
+      - name: Capture APK
+        if: always() # حتى لو البناء فيه تحذير، حاول ترفع اللي طلع
         run: |
           mkdir -p output
           find . -name "*.apk" -exec cp {} output/D3f4ult.apk \;
-      - name: Upload
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: D3f4ult-App
+          name: D3f4ult-Package
           path: output/
